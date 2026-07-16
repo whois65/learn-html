@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>QR Generator</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:#111;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:420px;
+    background:#1b1b1b;
+    padding:24px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
+h1{
+    color:white;
+    font-size:24px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    font-size:16px;
+    background:#2a2a2a;
+    color:white;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+}
+
+button{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.generate{
+    background:#ffffff;
+    color:black;
+}
+
+.download{
+    background:#3b82f6;
+    color:white;
+}
+
+.canvas-wrapper{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:white;
+    border-radius:16px;
+}
+
+canvas{
+    width:100%;
+    max-width:280px;
+    image-rendering:pixelated;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>QR Code Generator</h1>
+
+    <input
+        type="text"
+        id="qrInput"
+        placeholder="Enter text or link..."
+    >
+
+    <div class="buttons">
+        <button class="generate" onclick="generateQRCode()">
+            Generate
+        </button>
+
+        <button class="download" onclick="downloadQRCode()">
+            Download
+        </button>
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="canvas"></canvas>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function generateQRCode(){
+
+    const text =
+        document.getElementById("qrInput")
+        .value
+        .trim();
+
+    if(!text){
+        alert("Please enter text or link");
+        return;
+    }
+
+    const qr = qrcode(0, 'H');
+
+    qr.addData(text);
+    qr.make();
+
+    const moduleCount = qr.getModuleCount();
+
+    const cellSize = 10;
+
+    canvas.width = moduleCount * cellSize;
+    canvas.height = moduleCount * cellSize;
+
+    for(let y = 0; y < moduleCount; y++){
+
+        for(let x = 0; x < moduleCount; x++){
+
+            ctx.fillStyle =
+                qr.isDark(y, x)
+                ? "#000000"
+                : "#ffffff";
+
+            ctx.fillRect(
+                x * cellSize,
+                y * cellSize,
+                cellSize,
+                cellSize
+            );
+        }
+    }
+}
+
+function downloadQRCode(){
+
+    const link = document.createElement("a");
+
+    link.download = "qr-code.png";
+
+    link.href = canvas.toDataURL("image/png");
+
+    link.click();
+}
+
+document
+.getElementById("qrInput")
+.addEventListener("keydown", e => {
+
+    if(e.key === "Enter"){
+        generateQRCode();
+    }
+});
+</script>
+
+</body>
+</html>
